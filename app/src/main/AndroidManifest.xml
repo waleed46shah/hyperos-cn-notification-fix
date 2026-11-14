@@ -4,8 +4,7 @@
   lower write non-public Settings.System keys (MILLET_NO_RESTRICT_APP is one).
   install.sh passes the low-target-sdk bypass flag to adb install for this reason.
 -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="dev.pushguard">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
@@ -13,6 +12,7 @@
 
     <application
         android:label="PushGuard"
+        android:icon="@mipmap/ic_launcher"
         android:allowBackup="false">
 
         <activity
