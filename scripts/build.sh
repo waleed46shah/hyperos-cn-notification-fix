@@ -19,11 +19,11 @@ export JAVA_HOME PATH="$JAVA_HOME/bin:$PATH"
 rm -rf build && mkdir -p build/classes
 
 echo "[1/5] Manifest"
-"$BT/aapt2" link -o build/base.apk --manifest app/AndroidManifest.xml -I "$PLAT" \
-  --min-sdk-version 21 --target-sdk-version 22 --version-code 1 --version-name 0.1.0-beta
+"$BT/aapt2" link -o build/base.apk --manifest app/src/main/AndroidManifest.xml -I "$PLAT" \
+  --min-sdk-version 21 --rename-manifest-package dev.pushguard --target-sdk-version 22 --version-code 1 --version-name 0.1.0-beta
 
 echo "[2/5] Compile"
-javac --release 17 -nowarn -classpath "$PLAT" -d build/classes app/src/dev/pushguard/*.java
+javac --release 17 -nowarn -classpath "$PLAT" -d build/classes app/src/main/java/dev/pushguard/*.java
 
 echo "[3/5] Dex"
 "$BT/d8" --release --min-api 21 --lib "$PLAT" --output build build/classes/dev/pushguard/*.class
