@@ -79,6 +79,17 @@ scripts/build.sh     # builds PushGuard.apk with aapt2/javac/d8/apksigner, no Gr
 scripts/install.sh   # installs it and grants background permissions
 ```
 
+### Option C: build from source (gradle)
+```bash
+gradlew assembleDebug
+```
+
+or if you have your signing keys ready:
+
+```bash
+gradlew assembleRelease
+```
+
 ## Check that it works
 
 - Open PushGuard. Every package should show **[on list]**.
