@@ -51,8 +51,15 @@ jobs:
               "$BT/dexdump" "$apk" 2>/dev/null | grep -q "Ldev/pushguard/$c;" \
                 || { echo "missing class $c in $apk"; exit 1; }
             done
+            # Permissions, components and intent filters, for comparing the two builds.
+            "$BT/aapt2" dump xmltree --file AndroidManifest.xml "$apk" \
+              | grep -E "^ *E: (uses-permission|activity|service|receiver|action|category)|A: .*android:(name|exported|foregroundServiceType)" \
+              | sed -E 's/ *\(line=[0-9]+\)//; s/\(0x[0-9a-f]+\)//' > "$(basename "$apk").manifest.txt"
             echo "OK: $apk"
           done
+          echo "== Manifest differences between the Gradle and build.sh APKs (should be none):"
+          diff app-debug.apk.manifest.txt PushGuard.apk.manifest.txt && echo "none"
+          cat PushGuard.apk.manifest.txt
 
       - uses: actions/upload-artifact@v4
         with:
