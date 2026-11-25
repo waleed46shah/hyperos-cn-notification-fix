@@ -24,9 +24,11 @@ jobs:
 
       - name: Install Android SDK packages
         run: |
-          yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null
-          "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" \
-            "build-tools;35.0.0" "platforms;android-35" "platforms;android-37" > /dev/null
+          SDKM="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKM" --licenses > /dev/null || true
+          # scripts/build.sh needs these; Gradle downloads what compileSdk needs itself.
+          "$SDKM" "build-tools;35.0.0" "platforms;android-35" > /dev/null
+          "$SDKM" --list 2>/dev/null | grep -E "platforms;android-3[6-9]" || true
 
       - name: Build with Gradle
         run: ./gradlew assembleDebug --no-daemon --stacktrace
