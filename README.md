@@ -79,16 +79,18 @@ scripts/build.sh     # builds PushGuard.apk with aapt2/javac/d8/apksigner, no Gr
 scripts/install.sh   # installs it and grants background permissions
 ```
 
-### Option C: build from source (gradle)
-```bash
-gradlew assembleDebug
-```
+### Option C: build from source with Gradle
 
-or if you have your signing keys ready:
+Needs **JDK 17+** and the **Android SDK** (set `ANDROID_HOME`, or put
+`sdk.dir=/path/to/sdk` in `local.properties`). Android Studio isn't required.
 
 ```bash
-gradlew assembleRelease
+./gradlew assembleDebug                 # on Windows: gradlew assembleDebug
+scripts/install.sh app/build/outputs/apk/debug/app-debug.apk
 ```
+
+`assembleRelease` builds an unsigned APK, since no signing config is set up;
+sign it yourself with `apksigner` before installing.
 
 ## Check that it works
 
@@ -115,6 +117,7 @@ adb shell am start -n dev.pushguard/.MainActivity --es remove com.google.android
 |---|---|---|
 | Xiaomi 14 Ultra (`aurora`) | HyperOS 3, OS3.0.306.0.WNACNXM | Play services no longer frozen |
 | Xiaomi 14 Ultra (`aurora`) | HyperOS 3, OS3.0.308.0.WNACNXM | Survived the OTA; overnight test passed (FCM connected, messages on time) |
+| Xiaomi 14 (`houji`, 23127PN0CC) | HyperOS 3, OS3.0.307.0.WNCCNXM, Android 16 | Working for a week. WhatsApp also had to be protected (see below) |
 
 If you test another device or build, please open an issue with the output of
 `scripts/check.sh`.
@@ -128,7 +131,11 @@ install it, and why the "older version of Android" warning appears.
 
 ## Limitations
 
-- **Beta.** Tested on one device so far.
+- **Beta.** Tested on two devices so far.
+- Protecting Play services is necessary but may not be enough on its own: the
+  freezer can also freeze the messaging app itself. Set your messaging apps
+  (WhatsApp, Slack and so on) to **Settings → Battery → No restrictions**, or add
+  them to PushGuard (see [Protect more apps](#protect-more-apps)).
 - Normal-priority pushes (some Instagram DMs, for example) can still wait for Android's
   Doze maintenance window. Pixels do the same, so that's standard Android behavior, not this bug.
 - A future HyperOS update could rename the setting, change how the freezer

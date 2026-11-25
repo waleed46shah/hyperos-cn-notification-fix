@@ -1,0 +1,60 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Fails if gradle-wrapper.jar isn't an official Gradle release.
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Install Android SDK packages
+        run: |
+          yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null
+          "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" \
+            "build-tools;35.0.0" "platforms;android-35" "platforms;android-37" > /dev/null
+
+      - name: Build with Gradle
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Build with scripts/build.sh (no Gradle)
+        run: scripts/build.sh
+
+      - name: Verify both APKs
+        run: |
+          BT="$ANDROID_SDK_ROOT/build-tools/35.0.0"
+          for apk in app/build/outputs/apk/debug/app-debug.apk PushGuard.apk; do
+            echo "== $apk"
+            "$BT/aapt2" dump badging "$apk" > badging.txt
+            grep -E "^package:|targetSdkVersion|application-icon-" badging.txt | head -5
+            grep -q "^package: name='dev.pushguard'" badging.txt
+            grep -q "targetSdkVersion:'22'" badging.txt
+            grep -q "application-icon-" badging.txt
+            "$BT/apksigner" verify "$apk"
+            for c in Guard GuardService MainActivity Receiver; do
+              "$BT/dexdump" "$apk" 2>/dev/null | grep -q "Ldev/pushguard/$c;" \
+                || { echo "missing class $c in $apk"; exit 1; }
+            done
+            echo "OK: $apk"
+          done
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: apks
+          path: |
+            app/build/outputs/apk/debug/app-debug.apk
+            PushGuard.apk
