@@ -1,0 +1,33 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace "dev.pushguard"
+
+    compileSdk 37
+
+    defaultConfig {
+        applicationId "dev.pushguard"
+
+        minSdk 21
+        targetSdk 22
+
+        versionCode 1
+        versionName "0.1.0-beta"
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+}
+
+dependencies {
+}

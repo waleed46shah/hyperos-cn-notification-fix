@@ -18,12 +18,17 @@ export JAVA_HOME PATH="$JAVA_HOME/bin:$PATH"
 
 rm -rf build && mkdir -p build/classes
 
-echo "[1/5] Manifest"
-"$BT/aapt2" link -o build/base.apk --manifest app/AndroidManifest.xml -I "$PLAT" \
+echo "[1/5] Manifest and resources"
+# The manifest has no package attribute (Gradle supplies it from build.gradle's
+# namespace), so give aapt2 a copy with the package name added.
+sed 's|<manifest |<manifest package="dev.pushguard" |' app/src/main/AndroidManifest.xml > build/AndroidManifest.xml
+grep -q 'package="dev.pushguard"' build/AndroidManifest.xml || { echo "Could not set package name in manifest"; exit 1; }
+"$BT/aapt2" compile --dir app/src/main/res -o build/res.zip
+"$BT/aapt2" link -o build/base.apk --manifest build/AndroidManifest.xml -I "$PLAT" build/res.zip \
   --min-sdk-version 21 --target-sdk-version 22 --version-code 1 --version-name 0.1.0-beta
 
 echo "[2/5] Compile"
-javac --release 17 -nowarn -classpath "$PLAT" -d build/classes app/src/dev/pushguard/*.java
+javac --release 17 -nowarn -classpath "$PLAT" -d build/classes app/src/main/java/dev/pushguard/*.java
 
 echo "[3/5] Dex"
 "$BT/d8" --release --min-api 21 --lib "$PLAT" --output build build/classes/dev/pushguard/*.class
